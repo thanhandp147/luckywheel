@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { DEFAULT_APP_CONFIG } from '@/lib/config'
 
+export const dynamic = 'force-dynamic'
+
 const ID = 'singleton'
 
 export async function GET() {

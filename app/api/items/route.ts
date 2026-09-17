@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { ITEMS, WheelItem } from '@/lib/config'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const db = await getDb()
