@@ -10,6 +10,8 @@ interface Props {
 export default function WheelCanvas({ onResult }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const angleRef = useRef(0)
+  const onResultRef = useRef(onResult)
+  useEffect(() => { onResultRef.current = onResult }, [onResult])
   const [isSpinning, setIsSpinning] = useState(false)
 
   const drawWheel = useCallback((rotationAngle: number) => {
@@ -129,12 +131,12 @@ export default function WheelCanvas({ onResult }: Props) {
         const normalized = ((angleRef.current % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
         const pointerAngle = (2 * Math.PI - normalized + (3 * Math.PI) / 2) % (2 * Math.PI)
         const index = Math.floor(pointerAngle / sliceAngle) % ITEMS.length
-        onResult(ITEMS[index])
+        onResultRef.current(ITEMS[index])
       }
     }
 
     requestAnimationFrame(animate)
-  }, [isSpinning, drawWheel, onResult])
+  }, [isSpinning, drawWheel])
 
   return (
     <main id="screen-wheel">

@@ -2,6 +2,8 @@
 import { getDb } from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
 
+export const dynamic = 'force-dynamic'
+
 interface SpinRecord {
   id: string
   label: string
