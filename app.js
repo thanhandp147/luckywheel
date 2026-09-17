@@ -21,6 +21,11 @@ let isSpinning   = false;
 
 // ── Draw wheel ────────────────────────────────────────────
 function drawWheel(rotationAngle) {
+  const displaySize = canvas.clientWidth || canvas.width;
+  if (canvas.width !== displaySize) {
+    canvas.width = displaySize;
+    canvas.height = displaySize;
+  }
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
   const r  = cx - 4;
