@@ -1,10 +1,12 @@
 // components/WheelCanvas.tsx
 'use client'
 import { useRef, useEffect, useCallback, useState } from 'react'
-import { ITEMS, WheelItem } from '@/lib/config'
+import { WheelItem, AppConfig } from '@/lib/config'
 
 interface Props {
   onResult: (item: WheelItem) => void
+  items: WheelItem[]
+  appConfig: AppConfig
 }
 
 function adjustHex(hex: string, amount: number): string {
@@ -27,7 +29,7 @@ function playTick(audioCtx: AudioContext) {
   osc.stop(audioCtx.currentTime + 0.04)
 }
 
-export default function WheelCanvas({ onResult }: Props) {
+export default function WheelCanvas({ onResult, items, appConfig }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const angleRef = useRef(0)
   const onResultRef = useRef(onResult)
@@ -50,15 +52,14 @@ export default function WheelCanvas({ onResult }: Props) {
     const cx = canvas.width / 2
     const cy = canvas.height / 2
     const r = cx - 4
-    const sliceAngle = (2 * Math.PI) / ITEMS.length
+    const sliceAngle = (2 * Math.PI) / items.length
 
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    ITEMS.forEach((item, i) => {
+    items.forEach((item, i) => {
       const start = rotationAngle + i * sliceAngle
       const end = start + sliceAngle
 
-      // Radial gradient: bright center → base color → darker edge
       const gradient = ctx.createRadialGradient(cx, cy, r * 0.12, cx, cy, r)
       gradient.addColorStop(0, adjustHex(item.color, 90))
       gradient.addColorStop(0.45, item.color)
@@ -74,7 +75,6 @@ export default function WheelCanvas({ onResult }: Props) {
       ctx.lineWidth = 1.5
       ctx.stroke()
 
-      // Label
       ctx.save()
       ctx.translate(cx, cy)
       ctx.rotate(start + sliceAngle / 2)
@@ -107,7 +107,6 @@ export default function WheelCanvas({ onResult }: Props) {
       ctx.restore()
     })
 
-    // Center circle with neon ring
     ctx.save()
     ctx.shadowColor = '#FF6B9D'
     ctx.shadowBlur = 22
@@ -123,7 +122,7 @@ export default function WheelCanvas({ onResult }: Props) {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText('🎡', cx, cy)
-  }, [])
+  }, [items])
 
   useEffect(() => {
     drawWheel(angleRef.current)
@@ -133,22 +132,19 @@ export default function WheelCanvas({ onResult }: Props) {
     if (isSpinning) return
     setIsSpinning(true)
 
-    // AudioContext must be created on user gesture
     if (!audioCtxRef.current) {
       try { audioCtxRef.current = new AudioContext() } catch { /* ignore */ }
     }
     const audioCtx = audioCtxRef.current
     lastSegmentRef.current = -1
 
-    // Casino wheel: 8–12 full rotations, 6–8s duration
     const extraSpins = 8 + Math.floor(Math.random() * 5)
     const targetAngle = angleRef.current + extraSpins * 2 * Math.PI + Math.random() * 2 * Math.PI
     const duration = 6000 + Math.random() * 2000
     const startTime = performance.now()
     const startAngle = angleRef.current
-    const sliceAngle = (2 * Math.PI) / ITEMS.length
+    const sliceAngle = (2 * Math.PI) / items.length
 
-    // Power-6 ease: blazing fast launch, very long dramatic slowdown
     function easeOut(t: number) {
       return 1 - Math.pow(1 - t, 6)
     }
@@ -159,10 +155,9 @@ export default function WheelCanvas({ onResult }: Props) {
       angleRef.current = startAngle + (targetAngle - startAngle) * easeOut(progress)
       drawWheel(angleRef.current)
 
-      // Tick on each segment crossing
       if (audioCtx) {
         const norm = ((angleRef.current % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
-        const seg = Math.floor(norm / sliceAngle) % ITEMS.length
+        const seg = Math.floor(norm / sliceAngle) % items.length
         if (lastSegmentRef.current !== seg && lastSegmentRef.current !== -1) {
           playTick(audioCtx)
         }
@@ -175,17 +170,17 @@ export default function WheelCanvas({ onResult }: Props) {
         setIsSpinning(false)
         const normalized = ((angleRef.current % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
         const pointerAngle = (2 * Math.PI - normalized + (3 * Math.PI) / 2) % (2 * Math.PI)
-        const index = Math.floor(pointerAngle / sliceAngle) % ITEMS.length
-        onResultRef.current(ITEMS[index])
+        const index = Math.floor(pointerAngle / sliceAngle) % items.length
+        onResultRef.current(items[index])
       }
     }
 
     requestAnimationFrame(animate)
-  }, [isSpinning, drawWheel])
+  }, [isSpinning, drawWheel, items])
 
   return (
     <main id="screen-wheel">
-      <h1 className="title">🎡 Vòng Quay May Mắn</h1>
+      <h1 className="title">{appConfig.title}</h1>
       <div className="wheel-container">
         <div className={`wheel-pointer${isSpinning ? ' spinning' : ''}`}>▼</div>
         <canvas
@@ -197,7 +192,7 @@ export default function WheelCanvas({ onResult }: Props) {
         />
       </div>
       <button className="btn-primary" onClick={spin} disabled={isSpinning}>
-        {isSpinning ? '🎰 Đang quay...' : '✨ Quay!'}
+        {isSpinning ? '🎰 Đang quay...' : appConfig.spinButtonText}
       </button>
     </main>
   )

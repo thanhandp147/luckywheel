@@ -7,6 +7,17 @@ export interface WheelItem {
   emoji: string
 }
 
+export interface AppConfig {
+  title: string
+  welcomeTitle: string
+  welcomeMessage: string
+  welcomeEmoji: string
+  startButtonText: string
+  resultTitle: string
+  spinButtonText: string
+  spinAgainText: string
+}
+
 export const ITEMS: WheelItem[] = [
   {
     label: 'Trà sữa trân châu',
@@ -57,3 +68,14 @@ export const ITEMS: WheelItem[] = [
     emoji: '🍦'
   }
 ]
+
+export const DEFAULT_APP_CONFIG: AppConfig = {
+  title: '🎡 Vòng Quay May Mắn',
+  welcomeTitle: 'Chào mừng em yêu!',
+  welcomeMessage: 'Quay để biết hôm nay uống gì nha~ 🥤',
+  welcomeEmoji: '🎉',
+  startButtonText: 'Bắt đầu thôi!',
+  resultTitle: 'Kết quả của em! 🎊',
+  spinButtonText: '✨ Quay!',
+  spinAgainText: 'Quay lại!',
+}

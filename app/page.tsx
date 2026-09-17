@@ -1,49 +1,35 @@
-// app/page.tsx
-'use client'
-import { useState, useCallback } from 'react'
-import { WheelItem } from '@/lib/config'
-import WelcomePopup from '@/components/WelcomePopup'
-import WheelCanvas from '@/components/WheelCanvas'
-import ResultPopup from '@/components/ResultPopup'
+import { getDb } from '@/lib/mongodb'
+import { ITEMS, DEFAULT_APP_CONFIG, WheelItem, AppConfig } from '@/lib/config'
+import WheelClient from '@/components/WheelClient'
 
-type Step = 'welcome' | 'wheel' | 'result'
+export const dynamic = 'force-dynamic'
 
-export default function HomePage() {
-  const [step, setStep] = useState<Step>('welcome')
-  const [selectedItem, setSelectedItem] = useState<WheelItem | null>(null)
+export default async function HomePage() {
+  let items: WheelItem[] = ITEMS
+  let appConfig: AppConfig = DEFAULT_APP_CONFIG
 
-  const handleStart = useCallback(() => {
-    setStep('wheel')
-  }, [])
+  try {
+    const db = await getDb()
 
-  const handleResult = useCallback(async (item: WheelItem) => {
-    setSelectedItem(item)
-    setStep('result')
-
-    // Save spin result to MongoDB via API — fire and forget
-    try {
-      await fetch('/api/spin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ label: item.label, emoji: item.emoji, image: item.image })
-      })
-    } catch (e) {
-      console.error('Failed to save spin result:', e)
+    const docs = await db.collection('items').find({}).sort({ order: 1 }).toArray()
+    if (docs.length > 0) {
+      items = docs.map(doc => ({
+        label: doc.label as string,
+        image: (doc.image as string) || '',
+        color: (doc.color as string) || '#FF6B9D',
+        emoji: (doc.emoji as string) || '🎡',
+      }))
     }
-  }, [])
 
-  const handleAgain = useCallback(() => {
-    setSelectedItem(null)
-    setStep('wheel')
-  }, [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const configDoc = await db.collection('appConfig').findOne({ _id: 'singleton' as any })
+    if (configDoc) {
+      const { _id, ...config } = configDoc
+      appConfig = { ...DEFAULT_APP_CONFIG, ...config }
+    }
+  } catch (e) {
+    console.error('HomePage: DB load failed, using defaults', e)
+  }
 
-  return (
-    <>
-      {step === 'welcome' && <WelcomePopup onStart={handleStart} />}
-      {step !== 'welcome' && <WheelCanvas onResult={handleResult} />}
-      {step === 'result' && selectedItem && (
-        <ResultPopup item={selectedItem} onAgain={handleAgain} />
-      )}
-    </>
-  )
+  return <WheelClient items={items} appConfig={appConfig} />
 }
