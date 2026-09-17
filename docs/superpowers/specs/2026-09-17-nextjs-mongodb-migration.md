@@ -45,8 +45,10 @@ Browser → Next.js (Vercel)
 
 ## File Structure
 
+Old files deleted first: `index.html`, `history.html`, `style.css`, `app.js`, `history.js`, `config.js`, `firebase-config.js`
+
 ```
-luckywheel-next/           ← new directory (clean project)
+luckywheel/                ← same repo, old files removed, Next.js scaffolded here
 ├── app/
 │   ├── layout.tsx         ← root layout: Nunito font, confetti Script, global CSS
 │   ├── globals.css        ← port of style.css — plain CSS, no Tailwind
@@ -162,12 +164,13 @@ Server Component. Calls `getDb()` directly — no API round trip. Fetches all sp
 
 ## Deployment
 
-1. Push `luckywheel-next/` to GitHub (new repo or same repo in subfolder)
-2. Import to Vercel → set `MONGODB_URI` env var
+1. Push same `luckywheel/` repo to GitHub (already connected to `thanhandp147/luckywheel`)
+2. Import repo to Vercel → set `MONGODB_URI` env var
 3. Vercel auto-deploys on push to `main`
 
 ## Migration Notes
 
+- Old vanilla HTML/JS/Firebase files deleted in Task 1
 - Existing spin data in Firebase is NOT migrated (clean slate)
-- GitHub Pages deployment of old project can be left or deleted
-- New URL: `https://luckywheel-next.vercel.app` (or custom domain)
+- GitHub Pages will break after old files removed — disable Pages in repo settings
+- New URL: Vercel-assigned (e.g. `luckywheel.vercel.app`)
