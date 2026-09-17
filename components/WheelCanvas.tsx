@@ -7,19 +7,40 @@ interface Props {
   onResult: (item: WheelItem) => void
 }
 
+function adjustHex(hex: string, amount: number): string {
+  const num = parseInt(hex.replace('#', ''), 16)
+  const r = Math.min(255, Math.max(0, (num >> 16) + amount))
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0xFF) + amount))
+  const b = Math.min(255, Math.max(0, (num & 0xFF) + amount))
+  return `rgb(${r},${g},${b})`
+}
+
+function playTick(audioCtx: AudioContext) {
+  const osc = audioCtx.createOscillator()
+  const gain = audioCtx.createGain()
+  osc.connect(gain)
+  gain.connect(audioCtx.destination)
+  osc.frequency.value = 480 + Math.random() * 240
+  gain.gain.setValueAtTime(0.07, audioCtx.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04)
+  osc.start()
+  osc.stop(audioCtx.currentTime + 0.04)
+}
+
 export default function WheelCanvas({ onResult }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const angleRef = useRef(0)
   const onResultRef = useRef(onResult)
   useEffect(() => { onResultRef.current = onResult }, [onResult])
   const [isSpinning, setIsSpinning] = useState(false)
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const lastSegmentRef = useRef(-1)
 
   const drawWheel = useCallback((rotationAngle: number) => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')!
 
-    // Sync canvas buffer to CSS display size for crisp rendering on mobile
     const displaySize = canvas.clientWidth || canvas.width
     if (canvas.width !== displaySize) {
       canvas.width = displaySize
@@ -37,26 +58,31 @@ export default function WheelCanvas({ onResult }: Props) {
       const start = rotationAngle + i * sliceAngle
       const end = start + sliceAngle
 
-      // Segment fill
+      // Radial gradient: bright center → base color → darker edge
+      const gradient = ctx.createRadialGradient(cx, cy, r * 0.12, cx, cy, r)
+      gradient.addColorStop(0, adjustHex(item.color, 90))
+      gradient.addColorStop(0.45, item.color)
+      gradient.addColorStop(1, adjustHex(item.color, -50))
+
       ctx.beginPath()
       ctx.moveTo(cx, cy)
       ctx.arc(cx, cy, r, start, end)
       ctx.closePath()
-      ctx.fillStyle = item.color
+      ctx.fillStyle = gradient
       ctx.fill()
-      ctx.strokeStyle = '#fff'
-      ctx.lineWidth = 2
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)'
+      ctx.lineWidth = 1.5
       ctx.stroke()
 
-      // Label text with word-wrap
+      // Label
       ctx.save()
       ctx.translate(cx, cy)
       ctx.rotate(start + sliceAngle / 2)
       ctx.textAlign = 'right'
       ctx.fillStyle = '#fff'
       ctx.font = 'bold 13px Nunito, sans-serif'
-      ctx.shadowColor = 'rgba(0,0,0,0.3)'
-      ctx.shadowBlur = 3
+      ctx.shadowColor = 'rgba(0,0,0,0.6)'
+      ctx.shadowBlur = 5
 
       const maxWidth = r - 30
       const words = item.label.split(' ')
@@ -81,20 +107,22 @@ export default function WheelCanvas({ onResult }: Props) {
       ctx.restore()
     })
 
-    // Center circle
+    // Center circle with neon ring
     ctx.save()
+    ctx.shadowColor = '#FF6B9D'
+    ctx.shadowBlur = 22
     ctx.beginPath()
-    ctx.arc(cx, cy, 24, 0, 2 * Math.PI)
-    ctx.fillStyle = '#fff'
+    ctx.arc(cx, cy, 28, 0, 2 * Math.PI)
+    ctx.fillStyle = '#0d0d20'
     ctx.fill()
     ctx.strokeStyle = '#FF6B9D'
     ctx.lineWidth = 3
     ctx.stroke()
-    ctx.font = '20px serif'
+    ctx.restore()
+    ctx.font = '22px serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText('🎡', cx, cy)
-    ctx.restore()
   }, [])
 
   useEffect(() => {
@@ -105,14 +133,24 @@ export default function WheelCanvas({ onResult }: Props) {
     if (isSpinning) return
     setIsSpinning(true)
 
-    const extraSpins = 5 + Math.floor(Math.random() * 5)  // 5-9 full rotations
+    // AudioContext must be created on user gesture
+    if (!audioCtxRef.current) {
+      try { audioCtxRef.current = new AudioContext() } catch { /* ignore */ }
+    }
+    const audioCtx = audioCtxRef.current
+    lastSegmentRef.current = -1
+
+    // Casino wheel: 8–12 full rotations, 6–8s duration
+    const extraSpins = 8 + Math.floor(Math.random() * 5)
     const targetAngle = angleRef.current + extraSpins * 2 * Math.PI + Math.random() * 2 * Math.PI
-    const duration = 4000 + Math.random() * 1500  // 4-5.5 seconds
+    const duration = 6000 + Math.random() * 2000
     const startTime = performance.now()
     const startAngle = angleRef.current
+    const sliceAngle = (2 * Math.PI) / ITEMS.length
 
+    // Power-6 ease: blazing fast launch, very long dramatic slowdown
     function easeOut(t: number) {
-      return 1 - Math.pow(1 - t, 4)
+      return 1 - Math.pow(1 - t, 6)
     }
 
     function animate(now: number) {
@@ -121,13 +159,20 @@ export default function WheelCanvas({ onResult }: Props) {
       angleRef.current = startAngle + (targetAngle - startAngle) * easeOut(progress)
       drawWheel(angleRef.current)
 
+      // Tick on each segment crossing
+      if (audioCtx) {
+        const norm = ((angleRef.current % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
+        const seg = Math.floor(norm / sliceAngle) % ITEMS.length
+        if (lastSegmentRef.current !== seg && lastSegmentRef.current !== -1) {
+          playTick(audioCtx)
+        }
+        lastSegmentRef.current = seg
+      }
+
       if (progress < 1) {
         requestAnimationFrame(animate)
       } else {
         setIsSpinning(false)
-
-        // Calculate which segment is at the top pointer
-        const sliceAngle = (2 * Math.PI) / ITEMS.length
         const normalized = ((angleRef.current % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
         const pointerAngle = (2 * Math.PI - normalized + (3 * Math.PI) / 2) % (2 * Math.PI)
         const index = Math.floor(pointerAngle / sliceAngle) % ITEMS.length
@@ -142,11 +187,17 @@ export default function WheelCanvas({ onResult }: Props) {
     <main id="screen-wheel">
       <h1 className="title">🎡 Vòng Quay May Mắn</h1>
       <div className="wheel-container">
-        <div className="wheel-pointer">▼</div>
-        <canvas ref={canvasRef} id="wheel-canvas" width={400} height={400} />
+        <div className={`wheel-pointer${isSpinning ? ' spinning' : ''}`}>▼</div>
+        <canvas
+          ref={canvasRef}
+          id="wheel-canvas"
+          className={isSpinning ? 'spinning' : ''}
+          width={400}
+          height={400}
+        />
       </div>
       <button className="btn-primary" onClick={spin} disabled={isSpinning}>
-        ✨ Quay!
+        {isSpinning ? '🎰 Đang quay...' : '✨ Quay!'}
       </button>
     </main>
   )
