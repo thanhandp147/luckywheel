@@ -37,6 +37,19 @@ export default function WheelCanvas({ onResult, items, appConfig }: Props) {
   const [isSpinning, setIsSpinning] = useState(false)
   const audioCtxRef = useRef<AudioContext | null>(null)
   const lastSegmentRef = useRef(-1)
+  const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map())
+  const [imageVersion, setImageVersion] = useState(0)
+
+  useEffect(() => {
+    items.forEach((item) => {
+      if (!item.image || imageCacheRef.current.has(item.image)) return
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => setImageVersion((n) => n + 1)
+      img.src = item.image
+      imageCacheRef.current.set(item.image, img)
+    })
+  }, [items])
 
   const drawWheel = useCallback((rotationAngle: number) => {
     const canvas = canvasRef.current
@@ -78,7 +91,34 @@ export default function WheelCanvas({ onResult, items, appConfig }: Props) {
       ctx.save()
       ctx.translate(cx, cy)
       ctx.rotate(start + sliceAngle / 2)
+
+      const img = item.image ? imageCacheRef.current.get(item.image) : undefined
+      const imgSize = Math.min(56, r * 0.32)
+      const imgRadius = r * 0.62
+
+      if (img && img.complete && img.naturalWidth > 0) {
+        ctx.save()
+        ctx.translate(imgRadius, 0)
+        ctx.beginPath()
+        ctx.arc(0, 0, imgSize / 2, 0, 2 * Math.PI)
+        ctx.closePath()
+        ctx.clip()
+        ctx.drawImage(img, -imgSize / 2, -imgSize / 2, imgSize, imgSize)
+        ctx.restore()
+        ctx.beginPath()
+        ctx.arc(imgRadius, 0, imgSize / 2, 0, 2 * Math.PI)
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)'
+        ctx.lineWidth = 2
+        ctx.stroke()
+      } else {
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.font = '28px serif'
+        ctx.fillText(item.emoji, imgRadius, 0)
+      }
+
       ctx.textAlign = 'right'
+      ctx.textBaseline = 'alphabetic'
       ctx.fillStyle = '#fff'
       ctx.font = 'bold 13px Nunito, sans-serif'
       ctx.shadowColor = 'rgba(0,0,0,0.6)'
@@ -122,7 +162,7 @@ export default function WheelCanvas({ onResult, items, appConfig }: Props) {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText('🎡', cx, cy)
-  }, [items])
+  }, [items, imageVersion])
 
   useEffect(() => {
     drawWheel(angleRef.current)
