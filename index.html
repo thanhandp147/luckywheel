@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vong Quay May Man</title>
+  <title>Vòng Quay May Mắn 🎡</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,9 +14,9 @@
   <div id="popup-welcome" class="popup-overlay active">
     <div class="popup-box">
       <div class="popup-emoji">🎉</div>
-      <h2 id="welcome-title">Chao mung em yeu!</h2>
-      <p id="welcome-message">Quay de biet hom nay uong gi nha~</p>
-      <button id="btn-start" class="btn-primary">Bat dau thoi!</button>
+      <h2 id="welcome-title">Chào mừng em yêu!</h2>
+      <p id="welcome-message">Quay để biết hôm nay uống gì nha~ 🥤</p>
+      <button id="btn-start" class="btn-primary">Bắt đầu thôi!</button>
     </div>
   </div>
 
@@ -21,21 +24,21 @@
   <div id="popup-result" class="popup-overlay">
     <div class="popup-box">
       <div id="result-emoji" class="popup-emoji">🎊</div>
-      <h2>Ket qua cua em!</h2>
+      <h2>Kết quả của em! 🎊</h2>
       <img id="result-image" src="" alt="" />
       <p id="result-label"></p>
-      <button id="btn-again" class="btn-secondary">Quay lai!</button>
+      <button id="btn-again" class="btn-secondary">Quay lại!</button>
     </div>
   </div>
 
   <!-- Main wheel screen -->
   <main id="screen-wheel" class="hidden">
-    <h1 class="title">Vong Quay May Man</h1>
+    <h1 class="title">🎡 Vòng Quay May Mắn</h1>
     <div class="wheel-container">
       <div class="wheel-pointer">▼</div>
       <canvas id="wheel-canvas" width="400" height="400"></canvas>
     </div>
-    <button id="btn-spin" class="btn-primary">Quay!</button>
+    <button id="btn-spin" class="btn-primary">✨ Quay!</button>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
