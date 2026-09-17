@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vong Quay May Man</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Welcome popup -->
+  <div id="popup-welcome" class="popup-overlay active">
+    <div class="popup-box">
+      <div class="popup-emoji">🎉</div>
+      <h2 id="welcome-title">Chao mung em yeu!</h2>
+      <p id="welcome-message">Quay de biet hom nay uong gi nha~</p>
+      <button id="btn-start" class="btn-primary">Bat dau thoi!</button>
+    </div>
+  </div>
+
+  <!-- Result popup -->
+  <div id="popup-result" class="popup-overlay">
+    <div class="popup-box">
+      <div id="result-emoji" class="popup-emoji">🎊</div>
+      <h2>Ket qua cua em!</h2>
+      <img id="result-image" src="" alt="" />
+      <p id="result-label"></p>
+      <button id="btn-again" class="btn-secondary">Quay lai!</button>
+    </div>
+  </div>
+
+  <!-- Main wheel screen -->
+  <main id="screen-wheel" class="hidden">
+    <h1 class="title">Vong Quay May Man</h1>
+    <div class="wheel-container">
+      <div class="wheel-pointer">▼</div>
+      <canvas id="wheel-canvas" width="400" height="400"></canvas>
+    </div>
+    <button id="btn-spin" class="btn-primary">Quay!</button>
+  </main>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="config.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
