@@ -17,6 +17,7 @@ export async function GET() {
       label: (doc.label as string) || 'Unknown',
       emoji: (doc.emoji as string) || '🎡',
       image: (doc.image as string) || '',
+      vote: (doc.vote as 'like' | 'dislike' | null) ?? null,
       createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : null
     }))
 

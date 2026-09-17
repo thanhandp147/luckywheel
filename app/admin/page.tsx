@@ -114,6 +114,11 @@ export default function AdminPage() {
             ['resultTitle', 'Tiêu đề kết quả'],
             ['spinButtonText', 'Nút quay'],
             ['spinAgainText', 'Nút quay lại'],
+            ['likeButtonText', 'Nút thích'],
+            ['dislikeButtonText', 'Nút không thích'],
+            ['deliveryTitle', 'Tiêu đề màn giao hàng'],
+            ['deliveryMessage', 'Nội dung màn giao hàng'],
+            ['deliveryLottieUrl', 'URL/đường dẫn Lottie giao hàng'],
           ] as [keyof AppConfig, string][]).map(([key, label]) => (
             <div key={key} className="admin-field">
               <label className="admin-label">{label}</label>

@@ -12,8 +12,8 @@ const nunito = Nunito({
 })
 
 export const metadata: Metadata = {
-  title: 'Vòng Quay May Mắn 🎡',
-  description: 'Quay vòng để biết hôm nay uống gì nha~'
+  title: '"Tổng đài Thành An"',
+  description: 'Mời cô giáo Thu Nga vào chọn nước'
 }
 
 export default function RootLayout({

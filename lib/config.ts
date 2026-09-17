@@ -16,6 +16,11 @@ export interface AppConfig {
   resultTitle: string
   spinButtonText: string
   spinAgainText: string
+  likeButtonText: string
+  dislikeButtonText: string
+  deliveryTitle: string
+  deliveryMessage: string
+  deliveryLottieUrl: string
 }
 
 export const ITEMS: WheelItem[] = [
@@ -78,4 +83,9 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   resultTitle: 'Kết quả của em! 🎊',
   spinButtonText: '✨ Quay!',
   spinAgainText: 'Quay lại!',
+  likeButtonText: '❤️ Thích',
+  dislikeButtonText: '👎 Không thích',
+  deliveryTitle: 'Đang giao hàng! 🛵',
+  deliveryMessage: 'Anh sẽ mang món này đến cho em liền nè. Chờ chút nha! 💕',
+  deliveryLottieUrl: '/lottie/delivery.json',
 }

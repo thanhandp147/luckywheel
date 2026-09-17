@@ -93,12 +93,13 @@ export default function WheelCanvas({ onResult, items, appConfig }: Props) {
       ctx.rotate(start + sliceAngle / 2)
 
       const img = item.image ? imageCacheRef.current.get(item.image) : undefined
-      const imgSize = Math.min(96, r * 0.56)
+      const imgSize = Math.min(76, r * 0.44)
       const imgRadius = r * 0.6
 
       if (img && img.complete && img.naturalWidth > 0) {
         ctx.save()
         ctx.translate(imgRadius, 0)
+        ctx.rotate(Math.PI / 2)
         ctx.beginPath()
         ctx.arc(0, 0, imgSize / 2, 0, 2 * Math.PI)
         ctx.closePath()

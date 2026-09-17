@@ -12,14 +12,15 @@ export async function POST(req: NextRequest) {
     }
 
     const db = await getDb()
-    await db.collection('spins').insertOne({
+    const result = await db.collection('spins').insertOne({
       label,
       emoji,
       image,
+      vote: null,
       createdAt: new Date()
     })
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, id: result.insertedId.toString() })
   } catch (e) {
     console.error('[POST /api/spin]', e)
     return NextResponse.json({ error: String(e) }, { status: 500 })

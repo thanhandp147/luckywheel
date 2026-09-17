@@ -9,7 +9,14 @@ interface SpinRecord {
   label: string
   emoji: string
   image: string
+  vote: 'like' | 'dislike' | null
   createdAt: string | null
+}
+
+function voteBadge(vote: 'like' | 'dislike' | null): { text: string; className: string } {
+  if (vote === 'like') return { text: '❤️ Thích', className: 'vote-badge vote-like' }
+  if (vote === 'dislike') return { text: '👎 Không thích', className: 'vote-badge vote-dislike' }
+  return { text: '⏳ Chưa chọn', className: 'vote-badge vote-pending' }
 }
 
 function formatDate(dateStr: string | null): string {
@@ -45,6 +52,7 @@ export default async function HistoryPage() {
       label: (doc.label as string) || 'Unknown',
       emoji: (doc.emoji as string) || '🎡',
       image: (doc.image as string) || '',
+      vote: (doc.vote as 'like' | 'dislike' | null) ?? null,
       createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : null
     }))
   } catch (e) {
@@ -100,6 +108,7 @@ export default async function HistoryPage() {
                   <div className="history-card-info">
                     <div className="history-card-label">{spin.label}</div>
                     <div className="history-card-time">{formatDate(spin.createdAt)}</div>
+                    <span className={voteBadge(spin.vote).className}>{voteBadge(spin.vote).text}</span>
                   </div>
                   <div className="history-card-emoji">{spin.emoji}</div>
                 </div>
