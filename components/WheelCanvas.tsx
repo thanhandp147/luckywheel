@@ -93,8 +93,8 @@ export default function WheelCanvas({ onResult, items, appConfig }: Props) {
       ctx.rotate(start + sliceAngle / 2)
 
       const img = item.image ? imageCacheRef.current.get(item.image) : undefined
-      const imgSize = Math.min(56, r * 0.32)
-      const imgRadius = r * 0.62
+      const imgSize = Math.min(96, r * 0.56)
+      const imgRadius = r * 0.6
 
       if (img && img.complete && img.naturalWidth > 0) {
         ctx.save()
@@ -113,37 +113,10 @@ export default function WheelCanvas({ onResult, items, appConfig }: Props) {
       } else {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.font = '28px serif'
+        ctx.font = `${Math.round(imgSize * 0.7)}px serif`
         ctx.fillText(item.emoji, imgRadius, 0)
       }
 
-      ctx.textAlign = 'right'
-      ctx.textBaseline = 'alphabetic'
-      ctx.fillStyle = '#fff'
-      ctx.font = 'bold 13px Nunito, sans-serif'
-      ctx.shadowColor = 'rgba(0,0,0,0.6)'
-      ctx.shadowBlur = 5
-
-      const maxWidth = r - 30
-      const words = item.label.split(' ')
-      let line = ''
-      const lines: string[] = []
-      for (const word of words) {
-        const test = line ? line + ' ' + word : word
-        if (ctx.measureText(test).width > maxWidth && line) {
-          lines.push(line)
-          line = word
-        } else {
-          line = test
-        }
-      }
-      lines.push(line)
-
-      const lineHeight = 16
-      const startY = -((lines.length - 1) * lineHeight) / 2
-      lines.forEach((l, li) => {
-        ctx.fillText(l, r - 16, startY + li * lineHeight)
-      })
       ctx.restore()
     })
 
